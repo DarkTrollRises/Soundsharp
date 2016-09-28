@@ -1,0 +1,219 @@
+package rijnijssel.soundsharp.menu;
+
+import java.util.ArrayList;
+import java.util.InputMismatchException;
+import java.util.Scanner;
+
+import rijnijssel.soundsharp.IO.MyScanner;
+import rijnijssel.soundsharp.data.MP3Player;
+import rijnijssel.soundsharp.lib.Functions;
+import rijnijssel.soundsharp.lib.Reference;
+import rijnijssel.soundsharp.lib.Strings;
+
+public class MainMenu
+{
+	private Scanner scanner = MyScanner.scanner;
+	
+	private ArrayList<MP3Player> players = new ArrayList<MP3Player>();
+	
+	private int totalStock;
+	private double totalWorth;
+	private double averagePrice;
+	private int bestPriceToSizeID;
+	private double bestPriceToSize;
+	
+	public void mainMenu(boolean direct)
+	{
+		addInitialPlayers();
+		if(!direct)
+			showMenu();
+		int choice = 0;
+		
+		while(true)
+		{
+			try
+			{
+				choice = scanner.nextInt();
+			}
+			catch(InputMismatchException e)
+			{
+				System.out.println(Strings.INPUT_INVALID);
+			}
+			processChoice(choice);
+		}
+	}
+	
+	private void showMenu()
+	{
+		for(int i = 0; i < Reference.MENU_ITEMS; i++)
+			System.out.println(Strings.MENU_ENTRIES[i]);
+	}
+	
+	private void processChoice(int choice)
+	{
+		switch(choice)
+		{
+			case 1:
+				menuItem1();
+				break;
+			case 2:
+				menuItem2();
+				break;
+			case 3:
+				menuItem3();
+				break;
+			case 4:
+				menuItem4();
+				break;
+			case 5:
+				menuItem5();
+				break;
+			case 8:
+				menuItem8();
+				break;
+			case 9:
+				menuItem9();
+				break;
+		}
+	}
+	
+	private void menuItem1()
+	{
+		for(MP3Player player:players)
+		{
+			System.out.println("ID: " + player.id);
+			System.out.println("Merk: " + player.make);
+			System.out.println("Model: " + player.model);
+			System.out.println("Grootte: " + player.size + " MB");
+			System.out.print("Prijs: ");
+			Functions.printTwoDecimals(player.price);
+			System.out.println();
+		}
+	}
+	
+	private void menuItem2()
+	{
+		for(MP3Player player:players)
+		{
+			System.out.println("ID: " + player.id);
+			System.out.println("Voorraad: " + player.stock);
+			System.out.println();
+		}
+	}
+	
+	private void menuItem3()
+	{
+		int id = 0;
+		int mutation = 0;
+		try
+		{
+			System.out.println(Strings.MUTATION_ID_QUESTION);
+			id = scanner.nextInt();
+			
+			System.out.println(Strings.MUTATION_QUESTION);
+			mutation = scanner.nextInt();
+		}
+		catch(Exception e)
+		{
+			System.out.println(Strings.MUTATION_INVALID);
+		}
+		
+		MP3Player player = players.get(id - 1);
+		if(player.stock + mutation >= 0)
+		{
+			player.stock += mutation;
+		}
+		else
+			System.out.println(Strings.MUTATION_INVALID);
+	}
+	
+	private void menuItem4()
+	{
+		calculateData();
+		
+		System.out.println(Strings.TOTAL_STORAGE_PLAYERS + totalStock);
+		
+		System.out.print(Strings.TOTAL_WORTH_PLAYERS);
+		Functions.printTwoDecimals(totalWorth);
+		
+		System.out.print(Strings.AVERAGE_PRICE_PLAYERS);
+		Functions.printTwoDecimals(averagePrice);
+		
+		System.out.print(Strings.BEST_PRICE_TO_SIZE_PLAYERS + players.get(bestPriceToSizeID - 1).make + " " + players.get(bestPriceToSizeID - 1).model + " - ");
+		Functions.printTwoDecimals(bestPriceToSize);
+	}
+	
+	private void menuItem5()
+	{
+		System.out.println(Strings.MAKE_PLAYER_QUESTION);
+		String make = scanner.next();
+		
+		System.out.println(Strings.MODEL_PLAYER_QUESTION);
+		String model = scanner.next();
+		
+		System.out.println(Strings.SIZE_PLAYER_QUESTION);
+		int size = scanner.nextInt();
+		
+		System.out.println(Strings.PRICE_PLAYER_QUESTION);
+		double price = scanner.nextDouble();
+		
+		players.add(MP3Player.addPlayer(getUniqueID(), make, model, size, price, 0));
+	}
+	
+	private void menuItem8()
+	{
+		showMenu();
+	}
+	
+	private void menuItem9()
+	{
+		System.exit(0);
+	}
+	
+	private void addInitialPlayers()
+	{
+		players.add(MP3Player.addPlayer(1, "GET technologies .inc", "HF 410", 4096, 129.95, 500));
+		players.add(MP3Player.addPlayer(2, "Far & Loud", "XM 600", 8192, 244.95, 500));
+		players.add(MP3Player.addPlayer(3, "Innovative", "Z3", 512, 79.95, 500));
+		players.add(MP3Player.addPlayer(4, "Resistance S.A.", "3001", 4096, 124.95, 500));
+		players.add(MP3Player.addPlayer(5, "CBA", "NXT volume", 2048, 159.05, 500));
+	}
+	
+	public void directLogin()
+	{
+		addInitialPlayers();
+		menuItem1();
+		System.out.println();
+		menuItem2();
+		System.out.println();
+		menuItem4();
+	}
+	
+	private void calculateData()
+	{
+		totalStock = 0;
+		totalWorth = 0;
+		averagePrice = 0;
+		bestPriceToSizeID = 0;
+		bestPriceToSize = 1000;
+		
+		for(MP3Player player:players)
+		{
+			totalStock += player.stock;
+			totalWorth += player.stock * player.price;
+			
+			if(player.priceToSize < bestPriceToSize)
+			{
+				bestPriceToSizeID = player.id;
+				bestPriceToSize = player.priceToSize;
+			}
+		}
+		
+		averagePrice = totalWorth / totalStock;
+	}
+	
+	private int getUniqueID()
+	{
+		return players.get(players.size() - 1).id + 1;
+	}
+}

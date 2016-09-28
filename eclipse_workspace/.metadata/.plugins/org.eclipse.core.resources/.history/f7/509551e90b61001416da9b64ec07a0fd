@@ -1,0 +1,92 @@
+package rijnijssel.soundsharp.login;
+
+import java.util.Scanner;
+
+import rijnijssel.soundsharp.IO.MyScanner;
+import rijnijssel.soundsharp.lib.Functions;
+import rijnijssel.soundsharp.lib.Reference;
+import rijnijssel.soundsharp.lib.Strings;
+import rijnijssel.soundsharp.menu.MainMenu;
+
+public class Login
+{
+	Scanner scanner = MyScanner.scanner;
+	private static String name;
+	
+	public void login(String name, String pass)
+	{
+		if(pass == Reference.SOUNDSHARP_PASSWORD);
+		{
+			Login.name = name;
+			
+			MainMenu menu = new MainMenu();
+			menu.addInitialPlayers();
+			menu.directLogin();
+		}
+	}
+	
+	public void login()
+	{
+		System.out.println(Strings.NAME_QUESTION);
+		String name = scanner.nextLine();
+		Login.name = name;
+		
+		int tries = 1;
+		while (tries <= Reference.MAXIMUM_PASS_TRIES)
+		{
+			if (tries > 1)
+				System.out.println("Poging " + tries + " van " + Reference.MAXIMUM_PASS_TRIES);
+			if (tries == 3)
+				System.out.println(Strings.FINAL_ATTEMPT);
+			System.out.println(Strings.PASS_QUESTION);
+			LoginResult result = new Login().getLoginResult(scanner.nextLine());
+			boolean passRight = false;
+
+			switch (result)
+			{
+				case PASSRIGHT:
+					passRight = true;
+					break;
+				case PASSWRONG:
+					System.out.println(Strings.PASS_WRONG);
+					tries++;
+					break;
+				case UNKNOWN:
+					System.out.println(Strings.PASS_ERROR);
+					break;
+				default:
+					System.out.println(Strings.PASS_ERROR);
+					break;
+			}
+
+			if (passRight)
+				break;
+			if (tries == 4)
+			{
+				System.out.println(Strings.PASS_WRONG_OFTEN);
+				Functions.enterToContinue();
+				System.exit(0);
+			}
+		}
+	}
+
+	public LoginResult getLoginResult(String pass)
+	{
+		try
+		{
+			if (pass.equals(Reference.SOUNDSHARP_PASSWORD))
+				return LoginResult.PASSRIGHT;
+			else
+				return LoginResult.PASSWRONG;
+		}
+		catch (Exception e)
+		{
+			return LoginResult.UNKNOWN;
+		}
+	}
+	
+	public String getName()
+	{
+		return name;
+	}
+}
